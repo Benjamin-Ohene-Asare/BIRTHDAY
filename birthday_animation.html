@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday!</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: #000; }
+  canvas { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+  #msg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  #hb {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: clamp(2.5rem, 9vw, 5.5rem);
+    font-weight: 600; color: #fff;
+    text-shadow: 0 0 40px rgba(255,200,100,0.9), 0 0 80px rgba(255,150,50,0.5);
+    opacity: 0; transform: scale(0.4);
+    transition: all 1.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: center; line-height: 1.15;
+  }
+  #sub {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: clamp(1rem, 3vw, 1.6rem);
+    color: rgba(255,255,255,0.88);
+    margin-top: 1.2rem; opacity: 0;
+    transform: translateY(24px);
+    transition: all 0.9s ease 1s;
+    text-align: center; letter-spacing: 0.03em;
+  }
+  #name {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: clamp(1.2rem, 4vw, 2.4rem);
+    font-weight: 700; color: #FFD93D;
+    text-shadow: 0 0 20px rgba(255,217,61,0.8), 0 0 40px rgba(255,180,0,0.4);
+    letter-spacing: 0.12em; margin-top: 1rem;
+    opacity: 0; transform: translateY(20px);
+    transition: all 1s ease 1.4s;
+    text-align: center;
+  }
+  #brand {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: clamp(0.85rem, 2.5vw, 1.2rem);
+    font-weight: 500; color: #C77DFF;
+    text-shadow: 0 0 16px rgba(199,125,255,0.8);
+    letter-spacing: 0.25em; margin-top: 0.5rem;
+    opacity: 0; transform: translateY(16px);
+    transition: all 0.9s ease 1.9s;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="msg">
+  <div id="hb">Happy<br>Birthday! 🎂</div>
+  <div id="name">BENJAMIN OHENE ASARE</div>
+  <div id="brand">✦ BENKREATION ✦</div>
+  <div id="sub">Wishing you the most amazing day!</div>
+</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const colors = ['#FF6B9D','#FFD93D','#6BCB77','#4DABF5','#FF8C42','#C77DFF','#FF595E','#00C9A7','#FFB347','#87CEEB'];
+
+class Confetti {
+  constructor() { this.reset(true); }
+  reset(init) {
+    this.x = Math.random() * canvas.width;
+    this.y = init ? Math.random() * canvas.height - canvas.height : -20;
+    this.size = Math.random() * 10 + 5;
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+    this.speed = Math.random() * 3 + 1;
+    this.drift = (Math.random() - 0.5) * 2;
+    this.rotation = Math.random() * Math.PI * 2;
+    this.rotSpeed = (Math.random() - 0.5) * 0.15;
+    this.shape = Math.floor(Math.random() * 3);
+    this.wave = Math.random() * Math.PI * 2;
+    this.waveAmp = Math.random() * 2 + 1;
+  }
+  update() {
+    this.y += this.speed;
+    this.wave += 0.05;
+    this.x += Math.sin(this.wave) * this.waveAmp + this.drift;
+    this.rotation += this.rotSpeed;
+    if (this.y > canvas.height + 20) this.reset(false);
+  }
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation);
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    if (this.shape === 0) {
+      ctx.rect(-this.size / 2, -this.size / 4, this.size, this.size / 2);
+    } else if (this.shape === 1) {
+      ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
+    } else {
+      ctx.moveTo(0, -this.size / 2);
+      ctx.lineTo(this.size / 3, this.size / 2);
+      ctx.lineTo(-this.size / 3, this.size / 2);
+      ctx.closePath();
+    }
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+class Firework {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
+    this.y = Math.random() * canvas.height * 0.5 + canvas.height * 0.05;
+    this.particles = [];
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+    const n = Math.floor(Math.random() * 20) + 30;
+    for (let i = 0; i < n; i++) {
+      const angle = (i / n) * Math.PI * 2;
+      const speed = Math.random() * 4 + 1;
+      this.particles.push({
+        x: this.x, y: this.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1, size: Math.random() * 4 + 2,
+        trail: []
+      });
+    }
+  }
+  update() {
+    this.particles.forEach(p => {
+      p.trail.push({ x: p.x, y: p.y });
+      if (p.trail.length > 8) p.trail.shift();
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.05; p.vx *= 0.98;
+      p.life -= 0.015;
+    });
+    this.particles = this.particles.filter(p => p.life > 0);
+  }
+  draw() {
+    this.particles.forEach(p => {
+      p.trail.forEach((t, i) => {
+        ctx.save();
+        ctx.globalAlpha = (i / p.trail.length) * p.life * 0.4;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, p.size * (i / p.trail.length) * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+      ctx.save();
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = this.color;
+      ctx.shadowColor = this.color;
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+  isDead() { return this.particles.length === 0; }
+}
+
+class Star {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2 + 0.5;
+    this.alpha = Math.random();
+    this.speed = Math.random() * 0.02 + 0.005;
+    this.phase = Math.random() * Math.PI * 2;
+  }
+  update() { this.phase += this.speed; this.alpha = 0.3 + Math.sin(this.phase) * 0.4; }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+const confetti = Array.from({ length: 180 }, () => new Confetti());
+const stars = Array.from({ length: 80 }, () => new Star());
+let fireworks = [];
+let frameCount = 0;
+
+function bgGradient() {
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  const t = frameCount * 0.003;
+  const r1 = Math.floor(30 + Math.sin(t) * 20);
+  const b1 = Math.floor(60 + Math.cos(t * 0.7) * 20);
+  grad.addColorStop(0, `rgb(${r1}, 10, ${b1})`);
+  grad.addColorStop(0.5, `rgb(20, ${Math.floor(20 + Math.sin(t * 1.3) * 10)}, ${Math.floor(80 + Math.cos(t) * 20)})`);
+  grad.addColorStop(1, `rgb(${Math.floor(60 + Math.sin(t * 0.5) * 20)}, 0, ${Math.floor(100 + Math.cos(t * 0.8) * 20)})`);
+  return grad;
+}
+
+function animate() {
+  frameCount++;
+  ctx.fillStyle = bgGradient();
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => { s.update(); s.draw(); });
+  if (frameCount % 45 === 0 && fireworks.length < 8) fireworks.push(new Firework());
+  fireworks.forEach(f => { f.update(); f.draw(); });
+  fireworks = fireworks.filter(f => !f.isDead());
+  confetti.forEach(c => { c.update(); c.draw(); });
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+setTimeout(() => {
+  const hb = document.getElementById('hb');
+  const sub = document.getElementById('sub');
+  const name = document.getElementById('name');
+  const brand = document.getElementById('brand');
+  hb.style.opacity = '1'; hb.style.transform = 'scale(1)';
+  sub.style.opacity = '1'; sub.style.transform = 'translateY(0)';
+  name.style.opacity = '1'; name.style.transform = 'translateY(0)';
+  brand.style.opacity = '1'; brand.style.transform = 'translateY(0)';
+}, 400);
+</script>
+</body>
+</html>
